@@ -1,10 +1,7 @@
 # Texas 2036 Time Sheet System
-**Author:** Antigravity (AI Pair Programmer)  
-**For:** Eric Booth, Senior Research Analyst, Texas 2036  
-**Branding Theme:** Texas 2036 Navy (`#1B2D55`) & Orange (`#D44500`)  
-**Design Philosophy:** Tufte-Inspired Analytical Visual Design ("Whisper, don't shout")  
+**For:** Eric Booth, Senior Researcher, Texas 2036  
 
-This folder contains a self-contained, automated, and manually-extensible timesheet system. It analyzes file modifications across your workspace directories to estimate active work hours and workdays.
+Python script: Analyzes file modifications across your workspace directories to estimate active work hours and workdays.
 
 ---
 
