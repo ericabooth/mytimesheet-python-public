@@ -1,4 +1,4 @@
-# Texas 2036 Time Sheet System
+# Script Derived Time Sheet System/Estimate based on Google Drive activity
 **For:** Eric Booth, Senior Researcher, Texas 2036  
 
 Python script: Analyzes file modifications across your workspace directories to estimate active work hours and workdays.
