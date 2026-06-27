@@ -8,7 +8,7 @@ Python script: Analyzes file modifications across your workspace directories to 
 ## 📂 Files in this Folder
 
 1. **`timesheet_generator.py`**: The reusable Python script that scans your workspace directories to collect and aggregate file modifications.
-2. **`timesheet.xlsx`**: The generated Excel workbook populated with your actual activity data from **June 1 to June 18, 2026**, driven by live formulas.
+2. **`timesheet.xlsx`**: The generated Excel workbook populated with your actual activity data during that month or week, driven by live formulas.
 3. **`README.md`**: This guide.
 
 ---
