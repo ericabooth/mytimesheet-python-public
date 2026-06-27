@@ -12,8 +12,14 @@ account. By default it discovers common local folders on the current machine:
 - `~/Documents`
 - `~/Desktop`
 
+<<<<<<< HEAD
 You can override those scan roots from the command line, a Stata option, or the
 `MYTIMESHEET_SCAN_DIRS` environment variable.
+=======
+1. **`timesheet_generator.py`**: The reusable Python script that scans your workspace directories to collect and aggregate file modifications.
+2. **`timesheet.xlsx`**: The generated Excel workbook populated with your actual activity data during that month or week, driven by live formulas.
+3. **`README.md`**: This guide.
+>>>>>>> e5e1b0f08076543edae21648e6edd596a9a07eab
 
 ## Files
 
