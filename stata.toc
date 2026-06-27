@@ -1,0 +1,3 @@
+v 3
+d mytimesheet Stata wrapper and Python generator
+p mytimesheet Excel timesheet estimates from local file activity

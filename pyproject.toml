@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mytimesheet"
+version = "0.2.0"
+description = "Generate Excel timesheet estimates from local file modification activity."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Eric A. Booth" }]
+dependencies = ["openpyxl>=3.1"]
+
+[project.scripts]
+mytimesheet = "mytimesheet.cli:main"
+
+[tool.setuptools]
+packages = ["mytimesheet"]

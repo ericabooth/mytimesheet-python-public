@@ -1,0 +1,18 @@
+v 3
+d mytimesheet: Excel timesheet estimates from local file activity
+d
+d Installs a Stata convenience wrapper plus the Python mytimesheet generator.
+f mytimesheet.ado
+f mytimesheet.sthlp
+f timesheet_generator.py
+f pyproject.toml
+f requirements.txt
+f README.md
+f LICENSE
+f mytimesheet/__init__.py
+f mytimesheet/__main__.py
+f mytimesheet/cli.py
+f mytimesheet/generator.py
+f mytimesheet/paths.py
+f mytimesheet/periods.py
+f mytimesheet/scanner.py
