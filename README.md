@@ -132,7 +132,7 @@ If the selected Python is wrong, pass `python("...")` explicitly.
 ### Install in Stata
 
 ```stata
-net install mytimesheet, from("https://raw.githubusercontent.com/ericbooth/mytimesheet-stata/master/") replace
+net install mytimesheet, from("https://raw.githubusercontent.com/ericabooth/mytimesheet-stata/master/") replace
 which mytimesheet
 help mytimesheet
 mytimesheet last-week, output("timesheet_last_week.xlsx")
