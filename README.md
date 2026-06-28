@@ -12,7 +12,6 @@ account. By default it discovers common local folders on the current machine:
 - `~/Documents`
 - `~/Desktop`
 
-<<<<<<< HEAD
 You can override those scan roots from the command line, a Stata option, or the
 `MYTIMESHEET_SCAN_DIRS` environment variable.
 =======
