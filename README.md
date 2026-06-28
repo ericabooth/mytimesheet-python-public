@@ -246,7 +246,7 @@ Or point Stata to a Python that already has `openpyxl`:
 mytimesheet last-week, python("/opt/homebrew/bin/python3")
 ```
 
-On Eric's current Mac, `/usr/bin/python3` does not have `openpyxl`, while
+if `/usr/bin/python3` does not have `openpyxl`, while
 `/opt/homebrew/bin/python3` does. The ado wrapper now prefers the Homebrew
 interpreter automatically when it exists.
 
@@ -263,6 +263,8 @@ If `which mytimesheet` returns something other than the path under
 `PLUS` (typically `~/Library/Application Support/Stata/ado/plus/m/`),
 an earlier copy from elsewhere on the adopath is shadowing the package.
 `ado uninstall mytimesheet` and re-run `net install`.
+
+
 
 ## Author
 
