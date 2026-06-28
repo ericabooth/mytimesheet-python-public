@@ -129,21 +129,12 @@ Python: /opt/homebrew/bin/python3
 
 If the selected Python is wrong, pass `python("...")` explicitly.
 
-### Use Directly from This Folder
-
-In Stata:
+### Install in Stata
 
 ```stata
-adopath ++ "/Users/ericbooth/Library/CloudStorage/GoogleDrive-eric.booth@texas2036.org/Shared drives/Data and Research Team/_codeshare/mytimesheet-python-public"
-help mytimesheet
-mytimesheet
-```
-
-If your Stata profile already puts the shared `_codeshare` folder on the
-adopath, the copied helper can be run directly:
-
-```stata
+net install mytimesheet, from("https://raw.githubusercontent.com/ericbooth/mytimesheet-stata/master/") replace
 which mytimesheet
+help mytimesheet
 mytimesheet last-week, output("timesheet_last_week.xlsx")
 ```
 
@@ -190,19 +181,6 @@ Install `openpyxl` into a specific Python executable:
 ```bash
 /opt/homebrew/bin/python3 -m pip install openpyxl
 ```
-
-## Stata Package Install Pattern
-
-If this folder is served or copied to a location Stata can read as a package
-source, users can install with:
-
-```stata
-net from "/path/to/mytimesheet-python-public"
-net install mytimesheet
-```
-
-For the shared-drive source in this repository, using `adopath ++` is often the
-simplest development workflow because it keeps Stata pointed at the live files.
 
 ## Workbook Logic
 
@@ -282,8 +260,11 @@ which mytimesheet
 adopath
 ```
 
-The expected shared-drive adopath copy is:
+If `which mytimesheet` returns something other than the path under
+`PLUS` (typically `~/Library/Application Support/Stata/ado/plus/m/`),
+an earlier copy from elsewhere on the adopath is shadowing the package.
+`ado uninstall mytimesheet` and re-run `net install`.
 
-```text
-.../Shared drives/Data and Research Team/_codeshare/mytimesheet.ado
-```
+## Author
+
+Eric A. Booth, Sr Researcher, Texas2036.org (eric.a.booth@gmail.com).

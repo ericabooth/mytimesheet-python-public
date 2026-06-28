@@ -2,6 +2,9 @@ v 3
 d mytimesheet: Excel timesheet estimates from local file activity
 d
 d Installs a Stata convenience wrapper plus the Python mytimesheet generator.
+d
+d Author: Eric A. Booth, Sr Researcher, Texas2036.org
+d Support: eric.a.booth@gmail.com
 f mytimesheet.ado
 f mytimesheet.sthlp
 f timesheet_generator.py
