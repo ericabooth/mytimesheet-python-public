@@ -14,11 +14,6 @@ account. By default it discovers common local folders on the current machine:
 
 You can override those scan roots from the command line, a Stata option, or the
 `MYTIMESHEET_SCAN_DIRS` environment variable.
-=======
-1. **`timesheet_generator.py`**: The reusable Python script that scans your workspace directories to collect and aggregate file modifications.
-2. **`timesheet.xlsx`**: The generated Excel workbook populated with your actual activity data during that month or week, driven by live formulas.
-3. **`README.md`**: This guide.
->>>>>>> e5e1b0f08076543edae21648e6edd596a9a07eab
 
 ## Files
 
@@ -116,7 +111,7 @@ The wrapper chooses Python in this order when `python()` is not supplied:
 
 1. `/opt/homebrew/bin/python3`
 2. `/usr/local/bin/python3`
-3. `python3` from the shell path
+3. `python3` from the shell path (`python` on Windows)
 
 The selected Python must have `openpyxl` installed. The wrapper prints the
 selected interpreter each time it runs, for example:
@@ -132,11 +127,14 @@ The wrapper expands a leading `~` in the installed script path (which is how
 `findfile` reports it under the default macOS and Linux PLUS folders), in
 `python()`, and in `output()`. If Python does not run or the generator stops
 with an error, `mytimesheet` stops with Stata error 498 after Python's message.
+Every argument (paths, `scandirs()`, `title()`) is passed to Python in single
+quotes on macOS and Linux, so double quotes and `$` text arrive unchanged; spaces
+around the `;` separators in `scandirs()` are ignored.
 
 ### Install in Stata
 
 ```stata
-net install mytimesheet, from("https://raw.githubusercontent.com/ericabooth/mytimesheet-stata/master/") replace
+net install mytimesheet, from("https://raw.githubusercontent.com/ericabooth/mytimesheet-python-public/main/") replace
 which mytimesheet
 help mytimesheet
 mytimesheet last-week, output("timesheet_last_week.xlsx")
@@ -206,8 +204,10 @@ literal time clock.
 ## Scanner Behavior
 
 On macOS, `mytimesheet` uses Spotlight (`mdfind`) when available because it is
-much faster for large Google Drive and local folders. If Spotlight is unavailable
-or fails for a folder, the package falls back to a recursive filesystem walk.
+much faster for large Google Drive and local folders. If Spotlight is unavailable,
+fails for a folder, or finds nothing in a folder (for example one outside the
+Spotlight index), the default `auto` scanner walks that folder instead and says
+so. `--scanner spotlight` uses Spotlight only.
 
 You can force a scanner:
 
@@ -229,7 +229,9 @@ mytimesheet last-week, scanner(walk)
 - Some cloud-sync tools preserve server-side timestamps rather than local edit
   times. Review the `Activity` sheet before using the output for reporting.
 - The package excludes common noisy folders such as `.git`, virtual
-  environments, caches, `node_modules`, and system metadata files.
+  environments, caches, `node_modules`, `tmp`/`temp`, and system metadata
+  files. Folder names are matched exactly, and only below each scan root, so a
+  scan root that itself sits inside a folder called `tmp` or `venv` still works.
 - If no activity is found, the workbook is still created with date rows and empty
   activity evidence.
 
@@ -273,6 +275,17 @@ an earlier copy from elsewhere on the adopath is shadowing the package.
 
 ## Changelog
 
+- **Stata wrapper 0.2.2 / Python package 0.2.1 (9 Nov 2026):** the wrapper passes
+  every argument in single quotes on macOS and Linux (double quotes and `$` text
+  in `title()` or paths used to be dropped or expanded by the shell), defaults to
+  `python` on Windows and wraps the shell line so `cmd.exe` keeps its quotes.
+  `scandirs()` ignores spaces around `;`. Python: excluded folder names (`tmp`,
+  `temp`, `venv`, `.git` and so on) are matched as whole names below the scan
+  root only, so a root under `/tmp` or `~/Documents/Temp` no longer gives zero
+  activity, and exclusions now work with Windows paths; `--scanner auto` walks a
+  folder when Spotlight returns nothing for it. The Stata package no longer
+  copies `README.md`, `LICENSE`, `pyproject.toml` and `requirements.txt` as
+  ancillary files.
 - **Stata wrapper 0.2.1 (9 Nov 2026):** the wrapper expands a leading `~` in the
   generator path, `python()`, and `output()`. Before, under the default macOS or
   Linux PLUS folder, `findfile` returned `~/.../timesheet_generator.py`, the shell

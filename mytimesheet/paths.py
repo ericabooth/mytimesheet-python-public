@@ -13,7 +13,7 @@ def split_scan_dirs(value: str | None) -> list[Path]:
     if not value:
         return []
     separator = ";" if ";" in value else os.pathsep
-    return [Path(part).expanduser() for part in value.split(separator) if part.strip()]
+    return [Path(part.strip()).expanduser() for part in value.split(separator) if part.strip()]
 
 
 def discover_default_scan_dirs() -> list[Path]:

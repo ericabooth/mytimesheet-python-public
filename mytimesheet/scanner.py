@@ -7,25 +7,31 @@ import os
 import platform
 import shutil
 import subprocess
-from pathlib import Path
+from pathlib import Path, PurePath
 
 
-EXCLUDE_SUBSTRINGS = (
-    "/.git/",
-    "/.venv/",
-    "/venv/",
-    "/node_modules/",
-    "/.cache/",
-    "/__pycache__/",
-    "/.claude/",
-    "/.gemini/",
-    "/.codex/",
-    "/.trash/",
-    "/.metadata/",
-    "/.vscode/",
-    "/.settings/",
-    "/tmp/",
-    "/temp/",
+# Folder names whose contents are never counted as work activity. They are
+# matched exactly (ignoring case) against the folders *below* the scan root,
+# so a scan root that itself sits under a folder named tmp or venv still works,
+# and Windows paths (backslashes) are handled the same as POSIX paths.
+EXCLUDE_DIRS = frozenset(
+    {
+        ".git",
+        ".venv",
+        "venv",
+        "node_modules",
+        ".cache",
+        "__pycache__",
+        ".claude",
+        ".gemini",
+        ".codex",
+        ".trash",
+        ".metadata",
+        ".vscode",
+        ".settings",
+        "tmp",
+        "temp",
+    }
 )
 
 EXCLUDE_FILENAMES = {".ds_store", "desktop.ini", "thumbs.db"}
@@ -37,11 +43,27 @@ def get_work_date(timestamp: dt.datetime, boundary: dt.time) -> dt.date:
     return timestamp.date()
 
 
-def should_skip(path: Path) -> bool:
-    lower_path = f"/{str(path).lower().strip('/')}"
-    return path.name.lower() in EXCLUDE_FILENAMES or any(
-        token in lower_path for token in EXCLUDE_SUBSTRINGS
-    )
+def _parts_below(path: PurePath, root: PurePath | None) -> tuple[str, ...]:
+    """Path components below root (all components when root is None or not a parent)."""
+    if root is not None:
+        try:
+            return path.relative_to(root).parts
+        except ValueError:
+            pass
+    return path.parts
+
+
+def should_skip(path: PurePath, root: PurePath | None = None, is_dir: bool = False) -> bool:
+    """True for noise files and for anything inside an excluded folder below root.
+
+    With is_dir=True, path is itself a folder and is skipped when its own name
+    is excluded (this is how the walk prunes .git, node_modules and so on).
+    """
+    if not is_dir and path.name.lower() in EXCLUDE_FILENAMES:
+        return True
+    parts = _parts_below(path, root)
+    folders = parts if is_dir else parts[:-1]
+    return any(part.lower() in EXCLUDE_DIRS for part in folders)
 
 
 def spotlight_available() -> bool:
@@ -68,10 +90,10 @@ def _walk_paths(directory: Path, start_dt: dt.datetime, end_dt: dt.datetime) -> 
     paths: list[Path] = []
     for root, dirs, files in os.walk(directory):
         root_path = Path(root)
-        dirs[:] = [name for name in dirs if not should_skip(root_path / name)]
+        dirs[:] = [name for name in dirs if not should_skip(root_path / name, directory, is_dir=True)]
         for filename in files:
             path = root_path / filename
-            if should_skip(path):
+            if should_skip(path, directory):
                 continue
             try:
                 modified = dt.datetime.fromtimestamp(path.stat().st_mtime)
@@ -89,12 +111,17 @@ def collect_modified_paths(
     scanner: str = "auto",
     quiet: bool = False,
 ) -> list[Path]:
-    """Collect modified file paths with Spotlight when possible, else os.walk."""
+    """Collect modified file paths with Spotlight when possible, else os.walk.
+
+    Under scanner="auto", a folder for which Spotlight returns nothing (for
+    example one outside the Spotlight index) is walked instead, so an
+    unindexed folder does not silently give an empty timesheet.
+    """
     use_spotlight = scanner == "spotlight" or (scanner == "auto" and spotlight_available())
     if scanner == "spotlight" and not spotlight_available():
         raise RuntimeError("Spotlight scanner requested, but mdfind is not available")
 
-    paths: list[Path] = []
+    found: list[tuple[Path, Path]] = []
     for directory in scan_dirs:
         if not directory.exists():
             if not quiet:
@@ -107,22 +134,28 @@ def collect_modified_paths(
 
         try:
             if use_spotlight:
-                paths.extend(_spotlight_paths(directory, start_dt, end_dt))
+                these = _spotlight_paths(directory, start_dt, end_dt)
+                if not these and scanner == "auto":
+                    if not quiet:
+                        print(f"  Spotlight found nothing in {directory}; checking with walk")
+                    these = _walk_paths(directory, start_dt, end_dt)
             else:
-                paths.extend(_walk_paths(directory, start_dt, end_dt))
+                these = _walk_paths(directory, start_dt, end_dt)
         except Exception as exc:
             if scanner == "spotlight":
                 raise
             if not quiet:
                 print(f"  Spotlight failed for {directory}; falling back to os.walk ({exc})")
-            paths.extend(_walk_paths(directory, start_dt, end_dt))
+            these = _walk_paths(directory, start_dt, end_dt)
+        found.extend((path, directory) for path in these)
 
     unique: dict[Path, Path] = {}
-    for path in paths:
+    for path, directory in found:
         try:
             resolved = path.resolve()
+            root = directory.resolve()
         except OSError:
             continue
-        if resolved.is_file() and not should_skip(resolved):
+        if resolved.is_file() and not should_skip(resolved, root):
             unique[resolved] = resolved
     return list(unique.values())

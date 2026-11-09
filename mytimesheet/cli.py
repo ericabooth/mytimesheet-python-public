@@ -13,7 +13,7 @@ try:
     from .periods import normalize_period, resolve_period
     from .paths import build_scan_dirs
 except ImportError:
-    __version__ = "0.2.0"
+    __version__ = "0.2.1"
     from generator import generate_timesheet
     from periods import normalize_period, resolve_period
     from paths import build_scan_dirs

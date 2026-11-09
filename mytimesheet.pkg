@@ -10,10 +10,6 @@ d Distribution-Date: 20261109
 f mytimesheet.ado
 f mytimesheet.sthlp
 f timesheet_generator.py
-f pyproject.toml
-f requirements.txt
-f README.md
-f LICENSE
 f mytimesheet/__init__.py
 f mytimesheet/__main__.py
 f mytimesheet/cli.py

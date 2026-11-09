@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 0.2.1 09nov2026}{...}
+{* *! version 0.2.2 09nov2026}{...}
 {title:Title}
 
 {p2colset 5 20 22 2}{...}
@@ -24,7 +24,10 @@
 
 {pstd}
 Allowed periods are {cmd:last-week}, {cmd:last-month}, {cmd:week}, {cmd:month}, and
-{cmd:range}. If no period is supplied, {cmd:last-week} is used.
+{cmd:range}. {cmd:week} and {cmd:month} are short names for {cmd:last-week} and
+{cmd:last-month} (they give the same dates). If no period is supplied,
+{cmd:last-week} is used, or {cmd:range} when {cmd:start()} or {cmd:end()} is
+given.
 
 {title:Description}
 
@@ -43,7 +46,8 @@ default PLUS folder) from your home folder; a leading {cmd:~} in {cmd:python()}
 or {cmd:output()} is expanded the same way. If Python does not run, or the
 generator stops with an error, {cmd:mytimesheet} stops with error 498 after
 Python's own message, so a do-file does not carry on as if a workbook had been
-written.
+written. On macOS and Linux every argument is passed to Python in single quotes,
+so double quotes and {cmd:$} text in {cmd:title()} or in paths arrive unchanged.
 
 {title:Options}
 
@@ -58,11 +62,15 @@ required when {it:period} is {cmd:range}.
 {phang}
 {cmd:python()} specifies the Python executable. If omitted, the wrapper tries
 {cmd:/opt/homebrew/bin/python3}, then {cmd:/usr/local/bin/python3}, then
-{cmd:python3}. The selected Python is printed when the command runs.
+{cmd:python3} ({cmd:python} on Windows). The selected Python is printed when the
+command runs.
 
 {phang}
-{cmd:scandirs()} passes semicolon-separated scan roots to Python. If omitted,
-Python discovers common local roots such as Google Drive, Documents, and Desktop.
+{cmd:scandirs()} passes semicolon-separated scan roots to Python; spaces around
+each {cmd:;} are ignored. If omitted, Python discovers common local roots such as
+Google Drive, Documents, and Desktop. Folders named {cmd:.git}, {cmd:node_modules},
+{cmd:venv}, {cmd:.venv}, {cmd:tmp}, {cmd:temp} and similar are skipped when they
+appear below a scan root.
 
 {phang}
 {cmd:boundary()} sets the workday rollover time. The default is {cmd:02:00}, so
@@ -75,7 +83,16 @@ Monday-Sunday week or previous completed calendar month.
 
 {phang}
 {cmd:scanner()} controls file discovery. {cmd:auto} uses Spotlight on macOS when
-available and falls back to a recursive walk.
+available and walks a folder instead when Spotlight fails or finds nothing in it
+(for example a folder outside the Spotlight index). {cmd:spotlight} uses
+Spotlight only; {cmd:walk} always walks.
+
+{phang}
+{cmd:title()} sets the title in cell A1 of the {cmd:Summary} sheet.
+
+{phang}
+{cmd:quiet} suppresses Python's progress messages (the period, scan folders and
+scanner used); errors and the saved-workbook line are still shown.
 
 {title:Python requirements}
 
@@ -117,8 +134,19 @@ If Stata finds an older copy, run:
 {phang2}{cmd:. adopath}{p_end}
 
 {pstd}
-The expected shared-drive adopath copy is in
-{cmd:.../Shared drives/Data and Research Team/_codeshare/mytimesheet.ado}.
+The expected copy is the one under your PLUS folder ({cmd:sysdir}); if another
+copy shadows it, {cmd:ado uninstall mytimesheet} and run {cmd:net install} again.
+
+{title:Changes}
+
+{pstd}0.2.2 (09nov2026): arguments keep double quotes and {cmd:$} text; Windows
+default {cmd:python} and quoting; {cmd:scandirs()} ignores spaces around {cmd:;};
+excluded folders are matched only below each scan root (a root under {cmd:/tmp}
+or {cmd:Temp} no longer gives zero activity) and on Windows paths;
+{cmd:scanner(auto)} walks a folder when Spotlight finds nothing.
+
+{pstd}0.2.1 (09nov2026): {cmd:~} expansion; error 498 when the generator does not
+finish.
 
 {title:Author}
 

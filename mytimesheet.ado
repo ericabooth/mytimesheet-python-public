@@ -1,5 +1,14 @@
-*! version 0.2.1 09nov2026
+*! version 0.2.2 09nov2026
 *! Eric A. Booth
+* 0.2.2 09nov2026: every argument is passed to Python in single quotes on
+*       macOS and Linux, so title() and paths keep double quotes and $ text
+*       (the shell used to drop or expand them); on Windows the default
+*       interpreter is python and the shell line is wrapped so cmd.exe keeps
+*       its quotes; spaces around the ; separators in scandirs() are ignored.
+*       Python side: folders such as tmp, temp or venv are excluded only below
+*       a scan root (a root inside such a folder used to give zero activity),
+*       exclusions work with Windows paths, and scanner(auto) walks a folder
+*       when Spotlight finds nothing in it.
 * 0.2.1 09nov2026: expand a leading ~ in the generator script path (findfile
 *       returns ~/... under the default macOS and Linux PLUS, which the shell
 *       passed to Python unexpanded, so nothing ran and rc was 0), in python()
@@ -16,6 +25,9 @@ program define mytimesheet
         }
         else if fileexists("/usr/local/bin/python3") {
             local python "/usr/local/bin/python3"
+        }
+        else if "`c(os)'" == "Windows" {
+            local python "python"
         }
         else {
             local python "python3"
@@ -58,27 +70,38 @@ program define mytimesheet
     tempfile donefile
     capture erase `"`donefile'"'
 
-    local q = char(34)
-
-    local cmd `"`q'`python'`q' `q'`script'`q' `period' --output `q'`output'`q' --boundary `q'`boundary'`q' --scanner `q'`scanner'`q' --done-file `q'`donefile'`q'"'
-
+    * Each argument is quoted in Mata (single quotes for sh/zsh, so nothing
+    * inside is expanded; double quotes for cmd.exe)
+    local iswin = ("`c(os)'" == "Windows")
+    local cmd ""
+    foreach opt in python script period output boundary scanner donefile start end scandirs title {
+        if `"`macval(`opt')'"' != "" {
+            mata: _mytimesheet_q("`opt'", `iswin')
+        }
+    }
+    local cmd `"`macval(q_python)' `macval(q_script)' `macval(q_period)' --output `macval(q_output)' --boundary `macval(q_boundary)' --scanner `macval(q_scanner)' --done-file `macval(q_donefile)'"'
     if `"`start'"' != "" {
-        local cmd `"`macval(cmd)' --start `q'`start'`q'"'
+        local cmd `"`macval(cmd)' --start `macval(q_start)'"'
     }
     if `"`end'"' != "" {
-        local cmd `"`macval(cmd)' --end `q'`end'`q'"'
+        local cmd `"`macval(cmd)' --end `macval(q_end)'"'
     }
     if `"`scandirs'"' != "" {
-        local cmd `"`macval(cmd)' --scan-dirs `q'`scandirs'`q'"'
+        local cmd `"`macval(cmd)' --scan-dirs `macval(q_scandirs)'"'
     }
-    if `"`title'"' != "" {
-        local cmd `"`macval(cmd)' --title `q'`macval(title)'`q'"'
+    if `"`macval(title)'"' != "" {
+        local cmd `"`macval(cmd)' --title `macval(q_title)'"'
     }
     if "`rolling'" != "" {
         local cmd `"`macval(cmd)' --rolling"'
     }
     if "`quiet'" != "" {
         local cmd `"`macval(cmd)' --quiet"'
+    }
+    * cmd.exe strips the first and last quote of a line that starts with a
+    * quote and holds more than two, so wrap the whole line in one more pair
+    if `iswin' {
+        local cmd `""`macval(cmd)'""'
     }
 
     di as text "Running mytimesheet Python generator..."
@@ -112,4 +135,24 @@ program define _mytimesheet_tilde, rclass
         local path `"`home'`rest'"'
     }
     return local path `"`path'"'
+end
+
+mata:
+// Quote the caller's local called name for the shell and store it in the
+// local q_name (q_ plus that name): single quotes for sh/zsh (with ' written as '\''), double
+// quotes for cmd.exe (with " replaced by ').
+void _mytimesheet_q(string scalar name, real scalar iswin)
+{
+    string scalar v, sq
+
+    v = st_local(name)
+    if (iswin) {
+        v = char(34) + subinstr(v, char(34), char(39)) + char(34)
+    }
+    else {
+        sq = char(39)
+        v = sq + subinstr(v, sq, sq + char(92) + sq + sq) + sq
+    }
+    st_local("q_" + name, v)
+}
 end
