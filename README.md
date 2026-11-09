@@ -128,6 +128,11 @@ Python: /opt/homebrew/bin/python3
 
 If the selected Python is wrong, pass `python("...")` explicitly.
 
+The wrapper expands a leading `~` in the installed script path (which is how
+`findfile` reports it under the default macOS and Linux PLUS folders), in
+`python()`, and in `output()`. If Python does not run or the generator stops
+with an error, `mytimesheet` stops with Stata error 498 after Python's message.
+
 ### Install in Stata
 
 ```stata
@@ -265,6 +270,18 @@ an earlier copy from elsewhere on the adopath is shadowing the package.
 `ado uninstall mytimesheet` and re-run `net install`.
 
 
+
+## Changelog
+
+- **Stata wrapper 0.2.1 (9 Nov 2026):** the wrapper expands a leading `~` in the
+  generator path, `python()`, and `output()`. Before, under the default macOS or
+  Linux PLUS folder, `findfile` returned `~/.../timesheet_generator.py`, the shell
+  passed it to Python unexpanded inside quotes, Python could not open it, and the
+  command did nothing with rc 0. The wrapper now also stops with error 498 when
+  the generator does not finish (`timesheet_generator.py` writes a marker passed
+  with `--done-file` only on success), and with error 601 when the script is not
+  installed. The Python package itself is unchanged at 0.2.0.
+- **0.2.0 (27 Jun 2026):** Python package plus Stata wrapper.
 
 ## Author
 

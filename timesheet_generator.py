@@ -18,5 +18,21 @@ except ModuleNotFoundError as exc:
     from cli import main
 
 
+def _pop_done_file(argv: list) -> "str | None":
+    """Remove --done-file PATH (used by the Stata wrapper) from argv."""
+    if "--done-file" in argv:
+        i = argv.index("--done-file")
+        path = argv[i + 1] if i + 1 < len(argv) else None
+        del argv[i:i + 2]
+        return path
+    return None
+
+
 if __name__ == "__main__":
-    raise SystemExit(main())
+    _argv = sys.argv[1:]
+    _done = _pop_done_file(_argv)
+    _rc = main(_argv)
+    if _rc == 0 and _done:
+        # completion marker for mytimesheet.ado; -shell- does not pass back exit codes
+        Path(_done).write_text("done\n", encoding="utf-8")
+    raise SystemExit(_rc)

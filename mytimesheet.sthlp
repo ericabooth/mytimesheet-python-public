@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 0.2.0 27jun2026}{...}
+{* *! version 0.2.1 09nov2026}{...}
 {title:Title}
 
 {p2colset 5 20 22 2}{...}
@@ -35,6 +35,15 @@ an Excel workbook with a daily summary and folder-level activity evidence.
 
 {pstd}
 The wrapper is only a convenience layer. The workbook logic lives in Python.
+
+{pstd}
+The wrapper passes Python the full path of the installed
+{cmd:timesheet_generator.py}, expanding a leading {cmd:~} (as reported under the
+default PLUS folder) from your home folder; a leading {cmd:~} in {cmd:python()}
+or {cmd:output()} is expanded the same way. If Python does not run, or the
+generator stops with an error, {cmd:mytimesheet} stops with error 498 after
+Python's own message, so a do-file does not carry on as if a workbook had been
+written.
 
 {title:Options}
 
@@ -96,7 +105,8 @@ To force a specific Python from Stata, use:
 {title:Troubleshooting}
 
 {pstd}
-If Stata reports {cmd:ModuleNotFoundError: No module named 'openpyxl'}, install
+If Stata reports {cmd:ModuleNotFoundError: No module named 'openpyxl'} (followed
+by error 498), install
 {cmd:openpyxl} into the Python printed by the wrapper, or pass a Python that
 already has {cmd:openpyxl} with {cmd:python()}.
 
